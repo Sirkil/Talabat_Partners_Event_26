@@ -25,7 +25,7 @@
             width: 100vw;
             height: 100vh;
             overflow: hidden;
-            background-color: #0d0d0d;
+            background-color: #000;
             font-family: 'Poppins', sans-serif;
             color: white;
             position: relative;
@@ -44,95 +44,38 @@
             background: #000;
         }
 
-        /* Video element stretch to cover full screen width & height */
+        /* Video element stretch to cover full screen width & height perfectly */
         #reader video {
-            object-fit: contain !important; /* Ensures the whole feed is visible to the scanner */
-            width: 100% !important;
-            height: 100% !important;
-            background-color: #000;
+            object-fit: cover !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
 
-        /* Floating Camera Selector & Control Panel */
-        #reader__dashboard {
-            position: absolute !important;
-            top: max(68px, calc(env(safe-area-inset-top) + 48px)) !important;
-            left: 50% !important;
-            transform: translateX(-50%) !important;
-            z-index: 15 !important;
-            width: auto !important;
-            max-width: 90vw !important;
-            background: rgba(18, 18, 18, 0.75) !important;
-            backdrop-filter: blur(12px) !important;
-            -webkit-backdrop-filter: blur(12px) !important;
-            padding: 6px 14px !important;
-            border-radius: 24px !important;
-            border: 1px solid rgba(255, 255, 255, 0.15) !important;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            gap: 8px !important;
-        }
-
-        #reader select,
-        #reader__camera_selection {
-            background: rgba(255, 255, 255, 0.1) !important;
-            color: #ffffff !important;
-            border: 1px solid rgba(255, 255, 255, 0.25) !important;
-            padding: 6px 14px !important;
-            border-radius: 16px !important;
-            font-family: 'Poppins', sans-serif !important;
-            font-size: 13px !important;
-            font-weight: 500 !important;
-            outline: none !important;
-            cursor: pointer !important;
-        }
-
-        #reader select option {
-            background: #1e1e1e !important;
-            color: #ffffff !important;
-        }
-
-        #reader__dashboard_section_csr button,
-        #reader button {
-            background: #ff5a00 !important;
-            color: white !important;
-            border: none !important;
-            padding: 6px 16px !important;
-            border-radius: 16px !important;
-            font-family: 'Poppins', sans-serif !important;
-            font-weight: 600 !important;
-            cursor: pointer !important;
-            font-size: 13px !important;
-            margin: 0 !important;
-            box-shadow: 0 4px 12px rgba(255, 90, 0, 0.3) !important;
-        }
-
-        #reader__dashboard_section_swaplink,
-        #reader a {
-            color: #ff5a00 !important;
-            text-decoration: none;
-            font-size: 13px;
-        }
-
-        /* Viewfinder Overlay Reticle */
+        /* Viewfinder Overlay Reticle (Enlarged) */
         .reticle-container {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 300px;
-            height: 300px;
+            width: 75vw;
+            /* Enlarged square */
+            height: 75vw;
+            max-width: 500px;
+            max-height: 500px;
             z-index: 5;
             pointer-events: none;
-            box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.45);
-            border-radius: 20px;
+            /* Creates the dark blurred overlay outside the scanning square */
+            box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.6);
+            border-radius: 24px;
         }
 
         .reticle-corner {
             position: absolute;
-            width: 30px;
-            height: 30px;
+            width: 40px;
+            height: 40px;
             border-color: #ff5a00;
             border-style: solid;
             border-width: 0;
@@ -141,60 +84,60 @@
         .top-left {
             top: -2px;
             left: -2px;
-            border-top-width: 4px;
-            border-left-width: 4px;
-            border-top-left-radius: 16px;
+            border-top-width: 5px;
+            border-left-width: 5px;
+            border-top-left-radius: 24px;
         }
 
         .top-right {
             top: -2px;
             right: -2px;
-            border-top-width: 4px;
-            border-right-width: 4px;
-            border-top-right-radius: 16px;
+            border-top-width: 5px;
+            border-right-width: 5px;
+            border-top-right-radius: 24px;
         }
 
         .bottom-left {
             bottom: -2px;
             left: -2px;
-            border-bottom-width: 4px;
-            border-left-width: 4px;
-            border-bottom-left-radius: 16px;
+            border-bottom-width: 5px;
+            border-left-width: 5px;
+            border-bottom-left-radius: 24px;
         }
 
         .bottom-right {
             bottom: -2px;
             right: -2px;
-            border-bottom-width: 4px;
-            border-right-width: 4px;
-            border-bottom-right-radius: 16px;
+            border-bottom-width: 5px;
+            border-right-width: 5px;
+            border-bottom-right-radius: 24px;
         }
 
         .scan-line {
             position: absolute;
             top: 0;
-            left: 5%;
-            width: 90%;
+            left: 2%;
+            width: 96%;
             height: 3px;
             background: linear-gradient(90deg, transparent, #ff5a00, transparent);
-            box-shadow: 0 0 12px #ff5a00;
-            animation: scanAnim 2s infinite ease-in-out;
+            box-shadow: 0 0 15px #ff5a00;
+            animation: scanAnim 2.5s infinite ease-in-out;
             border-radius: 3px;
         }
 
         @keyframes scanAnim {
             0% {
-                top: 5%;
+                top: 2%;
                 opacity: 0.8;
             }
 
             50% {
-                top: 90%;
+                top: 96%;
                 opacity: 1;
             }
 
             100% {
-                top: 5%;
+                top: 2%;
                 opacity: 0.8;
             }
         }
@@ -278,8 +221,8 @@
 <body>
 
     <div class="scanner-header">
-        <span class="dot"></span>
-        <span>Scan Guest QR Code</span>
+        <span class="dot" id="indicator-dot"></span>
+        <span id="header-text">Scan Guest QR Code</span>
     </div>
 
     <!-- Center Reticle Frame -->
@@ -295,13 +238,15 @@
     <div id="reader"></div>
 
     <!-- Status Log -->
-    <div class="log" id="status-log">Waiting for scan...</div>
+    <div class="log" id="status-log">Camera initializing...</div>
 
     <script>
         let lastScannedName = "";
         let isCooldown = false;
         let countdownTimer = null;
         const statusLog = document.getElementById('status-log');
+        const indicatorDot = document.getElementById('indicator-dot');
+        const headerText = document.getElementById('header-text');
         const bc = window.BroadcastChannel ? new BroadcastChannel('talabat_registration') : null;
 
         function onScanSuccess(decodedText, decodedResult) {
@@ -312,6 +257,11 @@
             isCooldown = true;
             lastScannedName = decodedText;
             statusLog.classList.add('cooldown');
+
+            // Visual indicator update
+            indicatorDot.style.backgroundColor = "#ff5a00";
+            indicatorDot.style.boxShadow = "0 0 8px #ff5a00";
+            headerText.innerText = "Processing...";
 
             const guestData = { name: decodedText, timestamp: Date.now() };
 
@@ -355,6 +305,9 @@
         function restartScanner() {
             statusLog.classList.remove('cooldown');
             statusLog.innerText = "Waiting for scan...";
+            indicatorDot.style.backgroundColor = "#22c55e";
+            indicatorDot.style.boxShadow = "0 0 8px #22c55e";
+            headerText.innerText = "Scan Guest QR Code";
             isCooldown = false;
             lastScannedName = "";
         }
@@ -379,23 +332,31 @@
             } catch (e) { }
         }
 
-        let html5QrcodeScanner = new Html5QrcodeScanner(
-            "reader",
+        // Initialize directly via Html5Qrcode to bypass the auto-generated UI
+        const html5QrCode = new Html5Qrcode("reader");
+
+        // Force it to use the back camera natively
+        html5QrCode.start(
+            { facingMode: "environment" },
             {
                 fps: 15,
-                // qrbox removed to scan full screen
+                // Asking for high resolution to ensure crisp reads across the whole screen
                 videoConstraints: {
-                    facingMode: "environment",
-                    width: { ideal: 1920 }, // High resolution request to prevent blurriness
+                    width: { ideal: 1920 },
                     height: { ideal: 1080 }
                 }
             },
-            /* verbose= */ false
-        );
-        html5QrcodeScanner.render((decodedText, decodedResult) => {
-            playSuccessBeep();
-            onScanSuccess(decodedText, decodedResult);
-        }, onScanFailure);
+            (decodedText, decodedResult) => {
+                playSuccessBeep();
+                onScanSuccess(decodedText, decodedResult);
+            },
+            onScanFailure
+        ).then(() => {
+            statusLog.innerText = "Waiting for scan...";
+        }).catch((err) => {
+            console.error("Camera access error:", err);
+            statusLog.innerText = "Camera access denied or unavailable.";
+        });
 
         function submitToJotform(guestName) {
             console.log("Preparing to send to Jotform:", guestName);
@@ -409,15 +370,15 @@
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.responseCode === 200) {
-                    console.log('✅ Successfully saved to Jotform:', data);
-                } else {
-                    console.error('❌ Jotform API rejected the submission:', data.message);
-                }
-            })
-            .catch(error => console.error('Network Error saving to Jotform:', error));
+                .then(response => response.json())
+                .then(data => {
+                    if (data.responseCode === 200) {
+                        console.log('✅ Successfully saved to Jotform:', data);
+                    } else {
+                        console.error('❌ Jotform API rejected the submission:', data.message);
+                    }
+                })
+                .catch(error => console.error('Network Error saving to Jotform:', error));
         }
     </script>
 </body>
