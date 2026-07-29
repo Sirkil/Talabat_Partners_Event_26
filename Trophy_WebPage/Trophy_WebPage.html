@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Talabat - Valued Partner</title>
+    <!-- Google Font: Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #f7f6f2; /* Soft off-white matching the design */
+            font-family: 'Poppins', sans-serif;
+            color: #1a1a1a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* Fixed base container that scales dynamically to fit screen ratio */
+        .container {
+            width: 440px;
+            height: 860px;
+            background-color: #f7f6f2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 35px 24px 30px;
+            text-align: center;
+            position: relative;
+            transform-origin: center center;
+            flex-shrink: 0;
+            transition: transform 0.1s ease-out;
+        }
+
+        /* Top Logo */
+        .top-logo {
+            width: 180px;
+            height: auto;
+            margin-bottom: 10px;
+            border-radius: 8px;
+        }
+
+        /* Separated Headings */
+        .title-congrats {
+            font-size: 24px;
+            font-weight: 800;
+            line-height: 1;
+            color: #2c1a16;
+        }
+
+        .highlight-name {
+            font-size: 34px;
+            font-weight: 800;
+            color: #ff5a00; /* Talabat Orange */
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        /* Badge */
+        .badge {
+            background-color: #3b4248;
+            color: #ffffff;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            padding: 6px 18px;
+            border-radius: 15px;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        /* Main Paragraph */
+        .main-text {
+            font-size: 24px;
+            color: #4a4a4a;
+            line-height: 1.45;
+            margin-bottom: 15px;
+            padding: 0 10px;
+        }
+
+        /* Divider */
+        .divider {
+            width: 100%;
+            height: 2px;
+            background-color: #e0dcd5;
+            margin-bottom: 15px;
+        }
+
+        /* Impact Section */
+        h2 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #2c1a16;
+            margin-bottom: 8px;
+        }
+
+        .sub-text {
+            font-size: 24px;
+            color: #4a4a4a;
+            line-height: 1.5;
+            margin-bottom: 20px;
+            padding: 0 10px;
+        }
+
+        /* Bottom Logo Section */
+        .bottom-logo {
+            width: 100%;
+            max-width: 320px;
+            height: auto;
+            margin-bottom: 50px;
+        }
+
+        /* Thank You Badge (non-clickable badge) */
+        .thank-you-badge {
+            background-color: #ff5a00;
+            color: #ffffff;
+            font-size: 22px;
+            font-weight: 700;
+            text-align: center;
+            padding: 12px 40px;
+            border-radius: 30px;
+            display: inline-block;
+            box-shadow: 0 4px 16px rgba(255, 90, 0, 0.25);
+            letter-spacing: 0.5px;
+            width: 90%;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container" id="card-container">
+        <!-- Top Logo -->
+        <img src="../assets/talabat-logo.png" alt="Talabat Logo" class="top-logo" onerror="this.style.display='none'">
+
+        <!-- Separated Congratulations Heading -->
+        <h1 class="title-congrats">Congratulations,</h1>
+
+        <!-- Separated Partner Name -->
+        <div class="highlight-name" id="partner-name">Valued Partner</div>
+
+        <div class="badge">VALUED PARTNER 2026</div>
+
+        <p class="main-text">
+            Thank you for shaping everyday impact with talabat and helping deliver growth, innovation, and meaningful experiences across Egypt.
+        </p>
+
+        <div class="divider"></div>
+
+        <h2>Your Impact Journey</h2>
+
+        <p class="sub-text">
+            Driving excellence. Delivering impact. Building the future of everyday experiences.
+        </p>
+
+        <!-- Bottom Logo Graphic -->
+        <img src="../assets/talabat_partners_events.png" alt="Talabat Annual Partners Event 2026" class="bottom-logo">
+
+        <!-- Thank You Badge -->
+        <div class="thank-you-badge">Thank You!</div>
+    </div>
+
+    <script>
+        // Automatic scaling function to keep content fixed & scaled according to screen ratio
+        function autoScaleCard() {
+            const container = document.getElementById('card-container');
+            if (!container) return;
+
+            const baseWidth = 440;
+            const baseHeight = 860;
+
+            const scaleX = window.innerWidth / baseWidth;
+            const scaleY = window.innerHeight / baseHeight;
+
+            // Scale to fit viewport width and height perfectly without scrollbars
+            const scale = Math.min(scaleX, scaleY);
+            container.style.transform = `scale(${scale})`;
+        }
+
+        window.addEventListener('resize', autoScaleCard);
+        window.addEventListener('DOMContentLoaded', autoScaleCard);
+        window.addEventListener('load', autoScaleCard);
+
+        // Function to extract the partner name from URL parameters
+        function setPartnerName() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const name = urlParams.get('name');
+
+            if (name) {
+                document.getElementById('partner-name').innerText = decodeURIComponent(name);
+            }
+        }
+
+        window.onload = function() {
+            autoScaleCard();
+            setPartnerName();
+        };
+    </script>
+</body>
+</html>

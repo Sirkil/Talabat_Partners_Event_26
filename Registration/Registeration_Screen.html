@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Welcome Screen</title>
+    <!-- Google Font Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            background: url('../assets/Registration_bg.png') no-repeat center center;
+            background-size: cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Poppins', sans-serif;
+            overflow: hidden;
+        }
+
+        #welcome-container {
+            text-align: center;
+            opacity: 0;
+            transform: scale(0.92);
+            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            color: white;
+            padding: 20px;
+            /* Frame removed as requested */
+            background: none;
+            border-radius: 0;
+            backdrop-filter: none;
+        }
+
+        #welcome-container.active {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        h1 {
+            font-size: 5vw;
+            margin: 0 0 15px 0;
+            font-weight: 700;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.85), 0 2px 6px rgba(0, 0, 0, 0.7);
+            letter-spacing: -0.5px;
+        }
+
+        p {
+            font-size: 2.2vw;
+            margin: 0;
+            font-weight: 400;
+            text-shadow: 0 3px 15px rgba(0, 0, 0, 0.85), 0 2px 5px rgba(0, 0, 0, 0.7);
+            opacity: 0.95;
+        }
+
+        .highlight {
+            color: #ff5a00; /* Talabat Orange */
+            font-weight: 800;
+            text-shadow: 0 4px 25px rgba(255, 90, 0, 0.6), 0 2px 10px rgba(0, 0, 0, 0.9);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="welcome-container">
+        <h1>Welcome, <span id="guest-name" class="highlight"></span></h1>
+        <p>You're part of the Everyday Impact Network</p>
+    </div>
+
+    <script>
+        const welcomeContainer = document.getElementById('welcome-container');
+        const guestNameSpan = document.getElementById('guest-name');
+        let hideTimeout;
+
+        // BroadcastChannel listener for instant updates across tabs/windows
+        if (window.BroadcastChannel) {
+            const bc = new BroadcastChannel('talabat_registration');
+            bc.onmessage = (event) => {
+                if (event.data && event.data.name) {
+                    showWelcome(event.data.name);
+                }
+            };
+        }
+
+        window.addEventListener('storage', (event) => {
+            if (event.key === 'latestGuest') {
+                const data = JSON.parse(event.newValue);
+                if (data && data.name) {
+                    showWelcome(data.name);
+                }
+            }
+        });
+
+        function showWelcome(name) {
+            clearTimeout(hideTimeout);
+            
+            // Update name
+            guestNameSpan.innerText = name;
+            
+            // Trigger Fade In
+            welcomeContainer.classList.add('active');
+
+            // Hide after 6 seconds
+            hideTimeout = setTimeout(() => {
+                welcomeContainer.classList.remove('active');
+            }, 6000);
+        }
+    </script>
+</body>
+</html>

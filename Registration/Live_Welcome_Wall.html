@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Welcome Wall</title>
+    <!-- Google Font Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            background: url('../assets/Live_Screen_bg.png') no-repeat center center;
+            background-size: cover;
+            overflow: hidden;
+            font-family: 'Poppins', sans-serif;
+            position: relative;
+        }
+
+        #network-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 1px;
+            height: 1px;
+        }
+
+        .node {
+            position: absolute;
+            transform-origin: 0 50%;
+            white-space: nowrap;
+            color: white;
+            font-size: 1.1vw;
+            font-weight: 600;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9), 0 0 4px rgba(0,0,0,0.8);
+            opacity: 0;
+            animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, floatMotion 4s ease-in-out infinite alternate;
+            display: flex;
+            align-items: center;
+            transition: all 0.4s ease;
+        }
+
+        /* Connecting line */
+        .node::before {
+            content: '';
+            display: inline-block;
+            width: 60px;
+            height: 2px;
+            background: linear-gradient(90deg, #ff5a00, #ff8c00);
+            margin-right: 12px;
+            box-shadow: 0 0 10px #ff5a00;
+            transition: all 0.3s ease;
+        }
+
+        /* Newly added active node highlight */
+        .node.newly-added {
+            color: #fff;
+            font-size: 1.3vw;
+            font-weight: 800;
+            z-index: 10;
+        }
+
+        .node.newly-added::before {
+            width: 90px;
+            height: 4px;
+            background: #ffffff;
+            box-shadow: 0 0 20px #ffffff, 0 0 30px #ff5a00;
+        }
+
+        .node.newly-added .guest-badge {
+            background: rgba(255, 90, 0, 0.9);
+            border: 2px solid #ffffff;
+            padding: 4px 14px;
+            border-radius: 20px;
+            box-shadow: 0 0 25px rgba(255, 90, 0, 0.8);
+            animation: pulseGlow 1.5s infinite alternate;
+        }
+
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.3) rotate(0deg); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes floatMotion {
+            0% { transform: translateY(0px); }
+            100% { transform: translateY(-8px); }
+        }
+
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 15px rgba(255, 90, 0, 0.8); }
+            100% { shadow: 0 0 35px rgba(255, 255, 255, 1), 0 0 45px rgba(255, 90, 0, 1); }
+        }
+
+        /* Header indicator */
+        .live-status {
+            position: absolute;
+            top: 25px;
+            left: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            padding: 8px 18px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #fff;
+            font-size: 13px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .live-status .pulse-dot {
+            width: 9px;
+            height: 9px;
+            background-color: #ff5a00;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #ff5a00;
+            animation: livePulse 1.2s infinite;
+        }
+
+        @keyframes livePulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 90, 0, 0.7); }
+            70% { transform: scale(1.15); box-shadow: 0 0 0 10px rgba(255, 90, 0, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 90, 0, 0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="live-status">
+        <span class="pulse-dot"></span>
+        <span>LIVE NETWORK RESPONSES</span>
+    </div>
+
+    <!-- Center anchor point -->
+    <div id="network-center"></div>
+
+    <script>
+        const MAX_GUESTS = 40;
+        let guestList = [];
+        let newlyAddedName = "";
+        let lastProcessedTimestamp = 0;
+        const container = document.getElementById('network-center');
+
+        // Load existing stored history on initial load
+        try {
+            const storedAll = JSON.parse(localStorage.getItem('allGuests') || '[]');
+            storedAll.forEach(g => {
+                if (g.name && !guestList.includes(g.name)) {
+                    guestList.push(g.name);
+                }
+            });
+            if (guestList.length > MAX_GUESTS) {
+                guestList = guestList.slice(-MAX_GUESTS);
+            }
+        } catch(e) {}
+
+        renderWall();
+
+        // 1. BroadcastChannel real-time sync
+        if (window.BroadcastChannel) {
+            const bc = new BroadcastChannel('talabat_registration');
+            bc.onmessage = (event) => {
+                if (event.data && event.data.name) {
+                    processNewSubmission(event.data.name, event.data.timestamp);
+                }
+            };
+        }
+
+        // 2. Storage event for cross-tab sync
+        window.addEventListener('storage', (event) => {
+            if (event.key === 'latestGuest') {
+                try {
+                    const data = JSON.parse(event.newValue);
+                    if (data && data.name) {
+                        processNewSubmission(data.name, data.timestamp);
+                    }
+                } catch(e) {}
+            }
+        });
+
+        // 3. PostMessage window listener for iframe / external webhooks
+        window.addEventListener('message', (event) => {
+            if (event.data && (event.data.name || event.data.guestName)) {
+                const name = event.data.name || event.data.guestName;
+                processNewSubmission(name, Date.now());
+            }
+        });
+
+        // 4. Active polling loop fallback (checks every 500ms)
+        setInterval(() => {
+            try {
+                const raw = localStorage.getItem('latestGuest');
+                if (raw) {
+                    const data = JSON.parse(raw);
+                    if (data && data.name && data.timestamp > lastProcessedTimestamp) {
+                        processNewSubmission(data.name, data.timestamp);
+                    }
+                }
+            } catch(e) {}
+        }, 500);
+
+        function processNewSubmission(name, timestamp) {
+            if (timestamp && timestamp <= lastProcessedTimestamp) return;
+            if (timestamp) lastProcessedTimestamp = timestamp;
+
+            newlyAddedName = name;
+            addGuestToWall(name);
+
+            // Clear active highlight glow after 8 seconds
+            setTimeout(() => {
+                if (newlyAddedName === name) {
+                    newlyAddedName = "";
+                    renderWall();
+                }
+            }, 8000);
+        }
+
+        function addGuestToWall(name) {
+            if (guestList.length >= MAX_GUESTS) {
+                guestList.shift();
+            }
+            guestList.push(name);
+            renderWall();
+        }
+
+        function renderWall() {
+            container.innerHTML = '';
+            
+            const total = guestList.length;
+            if (total === 0) return;
+
+            const angleStep = 360 / Math.max(total, 12);
+            
+            guestList.forEach((name, index) => {
+                const node = document.createElement('div');
+                const isNew = (name === newlyAddedName);
+                node.className = isNew ? 'node newly-added' : 'node';
+                node.style.animationDelay = `${(index * 0.1) % 2}s`;
+                
+                const textSpan = document.createElement('span');
+                textSpan.className = 'guest-badge';
+                textSpan.innerText = name;
+                node.appendChild(textSpan);
+
+                const angle = index * angleStep;
+                const radius = isNew ? 220 : 250 + ((index % 5) * 25);
+
+                node.style.transform = `rotate(${angle}deg) translateX(${radius}px)`;
+                
+                // Flip text on left side (90 to 270 deg) for optimal readability
+                if (angle > 90 && angle < 270) {
+                    textSpan.style.transform = `rotate(180deg)`;
+                    textSpan.style.display = 'inline-block';
+                    node.style.flexDirection = 'row-reverse';
+                    node.style.justifyContent = 'flex-end';
+                }
+
+                container.appendChild(node);
+            });
+        }
+    </script>
+</body>
+</html>

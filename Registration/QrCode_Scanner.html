@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>QR Code Scanner</title>
+    <!-- Google Font Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #0d0d0d;
+            font-family: 'Poppins', sans-serif;
+            color: white;
+            position: relative;
+        }
+
+        /* Full Screen Reader Container */
+        #reader {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw !important;
+            height: 100vh !important;
+            border: none !important;
+            z-index: 1;
+            overflow: hidden;
+            background: #000;
+        }
+
+        /* Video element stretch to cover full screen width & height */
+        #reader video {
+            object-fit: contain !important; /* Ensures the whole feed is visible to the scanner */
+            width: 100% !important;
+            height: 100% !important;
+            background-color: #000;
+        }
+
+        /* Floating Camera Selector & Control Panel */
+        #reader__dashboard {
+            position: absolute !important;
+            top: max(68px, calc(env(safe-area-inset-top) + 48px)) !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            z-index: 15 !important;
+            width: auto !important;
+            max-width: 90vw !important;
+            background: rgba(18, 18, 18, 0.75) !important;
+            backdrop-filter: blur(12px) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
+            padding: 6px 14px !important;
+            border-radius: 24px !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 8px !important;
+        }
+
+        #reader select,
+        #reader__camera_selection {
+            background: rgba(255, 255, 255, 0.1) !important;
+            color: #ffffff !important;
+            border: 1px solid rgba(255, 255, 255, 0.25) !important;
+            padding: 6px 14px !important;
+            border-radius: 16px !important;
+            font-family: 'Poppins', sans-serif !important;
+            font-size: 13px !important;
+            font-weight: 500 !important;
+            outline: none !important;
+            cursor: pointer !important;
+        }
+
+        #reader select option {
+            background: #1e1e1e !important;
+            color: #ffffff !important;
+        }
+
+        #reader__dashboard_section_csr button,
+        #reader button {
+            background: #ff5a00 !important;
+            color: white !important;
+            border: none !important;
+            padding: 6px 16px !important;
+            border-radius: 16px !important;
+            font-family: 'Poppins', sans-serif !important;
+            font-weight: 600 !important;
+            cursor: pointer !important;
+            font-size: 13px !important;
+            margin: 0 !important;
+            box-shadow: 0 4px 12px rgba(255, 90, 0, 0.3) !important;
+        }
+
+        #reader__dashboard_section_swaplink,
+        #reader a {
+            color: #ff5a00 !important;
+            text-decoration: none;
+            font-size: 13px;
+        }
+
+        /* Viewfinder Overlay Reticle */
+        .reticle-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+            z-index: 5;
+            pointer-events: none;
+            box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.45);
+            border-radius: 20px;
+        }
+
+        .reticle-corner {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-color: #ff5a00;
+            border-style: solid;
+            border-width: 0;
+        }
+
+        .top-left {
+            top: -2px;
+            left: -2px;
+            border-top-width: 4px;
+            border-left-width: 4px;
+            border-top-left-radius: 16px;
+        }
+
+        .top-right {
+            top: -2px;
+            right: -2px;
+            border-top-width: 4px;
+            border-right-width: 4px;
+            border-top-right-radius: 16px;
+        }
+
+        .bottom-left {
+            bottom: -2px;
+            left: -2px;
+            border-bottom-width: 4px;
+            border-left-width: 4px;
+            border-bottom-left-radius: 16px;
+        }
+
+        .bottom-right {
+            bottom: -2px;
+            right: -2px;
+            border-bottom-width: 4px;
+            border-right-width: 4px;
+            border-bottom-right-radius: 16px;
+        }
+
+        .scan-line {
+            position: absolute;
+            top: 0;
+            left: 5%;
+            width: 90%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #ff5a00, transparent);
+            box-shadow: 0 0 12px #ff5a00;
+            animation: scanAnim 2s infinite ease-in-out;
+            border-radius: 3px;
+        }
+
+        @keyframes scanAnim {
+            0% {
+                top: 5%;
+                opacity: 0.8;
+            }
+
+            50% {
+                top: 90%;
+                opacity: 1;
+            }
+
+            100% {
+                top: 5%;
+                opacity: 0.8;
+            }
+        }
+
+        /* Floating Top Bar */
+        .scanner-header {
+            position: absolute;
+            top: max(20px, env(safe-area-inset-top));
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            background: rgba(18, 18, 18, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 10px 24px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 15px;
+            letter-spacing: 0.5px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            white-space: nowrap;
+        }
+
+        .scanner-header .dot {
+            width: 8px;
+            height: 8px;
+            background-color: #22c55e;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #22c55e;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        /* Floating Status Log at Bottom */
+        .log {
+            position: absolute;
+            bottom: max(30px, env(safe-area-inset-bottom));
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            width: calc(100% - 40px);
+            max-width: 480px;
+            background: rgba(255, 90, 0, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: white;
+            border-radius: 18px;
+            padding: 16px 20px;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            font-weight: 600;
+            font-size: 15px;
+            line-height: 1.4;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .log.cooldown {
+            background: rgba(34, 197, 94, 0.95);
+            box-shadow: 0 12px 35px rgba(34, 197, 94, 0.4);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="scanner-header">
+        <span class="dot"></span>
+        <span>Scan Guest QR Code</span>
+    </div>
+
+    <!-- Center Reticle Frame -->
+    <div class="reticle-container">
+        <div class="reticle-corner top-left"></div>
+        <div class="reticle-corner top-right"></div>
+        <div class="reticle-corner bottom-left"></div>
+        <div class="reticle-corner bottom-right"></div>
+        <div class="scan-line"></div>
+    </div>
+
+    <!-- Scanner container -->
+    <div id="reader"></div>
+
+    <!-- Status Log -->
+    <div class="log" id="status-log">Waiting for scan...</div>
+
+    <script>
+        let lastScannedName = "";
+        let isCooldown = false;
+        let countdownTimer = null;
+        const statusLog = document.getElementById('status-log');
+        const bc = window.BroadcastChannel ? new BroadcastChannel('talabat_registration') : null;
+
+        function onScanSuccess(decodedText, decodedResult) {
+            console.log("Scanned QR Text:", decodedText);
+            if (isCooldown) return;
+            if (decodedText === lastScannedName) return;
+
+            isCooldown = true;
+            lastScannedName = decodedText;
+            statusLog.classList.add('cooldown');
+
+            const guestData = { name: decodedText, timestamp: Date.now() };
+
+            // 1. Broadcast to other tabs/windows via LocalStorage & BroadcastChannel
+            localStorage.setItem('latestGuest', JSON.stringify(guestData));
+
+            // Store in allGuests history list
+            try {
+                let existing = JSON.parse(localStorage.getItem('allGuests') || '[]');
+                existing.push(guestData);
+                localStorage.setItem('allGuests', JSON.stringify(existing));
+            } catch (e) { }
+
+            if (bc) {
+                bc.postMessage(guestData);
+            }
+
+            // 2. Submit to Jotform API
+            submitToJotform(decodedText);
+
+            // 3. Start 5-second countdown timer before resetting lock
+            let secondsLeft = 5;
+            updateStatusText(decodedText, secondsLeft);
+
+            clearInterval(countdownTimer);
+            countdownTimer = setInterval(() => {
+                secondsLeft--;
+                if (secondsLeft > 0) {
+                    updateStatusText(decodedText, secondsLeft);
+                } else {
+                    clearInterval(countdownTimer);
+                    restartScanner();
+                }
+            }, 1000);
+        }
+
+        function updateStatusText(name, seconds) {
+            statusLog.innerHTML = `✅ <strong>Successfully scanned: ${name}</strong><br><span style="font-size: 13px; opacity: 0.9;">Ready for next scan in ${seconds}s...</span>`;
+        }
+
+        function restartScanner() {
+            statusLog.classList.remove('cooldown');
+            statusLog.innerText = "Waiting for scan...";
+            isCooldown = false;
+            lastScannedName = "";
+        }
+
+        function onScanFailure(error) {
+            // Quietly ignore frame scan retry attempts
+        }
+
+        function playSuccessBeep() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = "sine";
+                osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.15);
+            } catch (e) { }
+        }
+
+        let html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader",
+            {
+                fps: 15,
+                // qrbox removed to scan full screen
+                videoConstraints: {
+                    facingMode: "environment",
+                    width: { ideal: 1920 }, // High resolution request to prevent blurriness
+                    height: { ideal: 1080 }
+                }
+            },
+            /* verbose= */ false
+        );
+        html5QrcodeScanner.render((decodedText, decodedResult) => {
+            playSuccessBeep();
+            onScanSuccess(decodedText, decodedResult);
+        }, onScanFailure);
+
+        function submitToJotform(guestName) {
+            console.log("Preparing to send to Jotform:", guestName);
+            const scanTime = new Date().toLocaleString();
+
+            const formData = new FormData();
+            formData.append('submission[5]', guestName); // Guest Name Field
+            formData.append('submission[3]', scanTime);  // Timestamp Field
+
+            fetch('https://api.jotform.com/form/262092294490056/submissions?apiKey=4806f3b863cdd104af92ccc3f99860c4', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.responseCode === 200) {
+                    console.log('✅ Successfully saved to Jotform:', data);
+                } else {
+                    console.error('❌ Jotform API rejected the submission:', data.message);
+                }
+            })
+            .catch(error => console.error('Network Error saving to Jotform:', error));
+        }
+    </script>
+</body>
+
+</html>

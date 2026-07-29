@@ -1,0 +1,279 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Floor - Live Diagnostic</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #121212;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            font-family: monospace;
+        }
+
+        #screen-container {
+            position: relative;
+            width: 1920px;
+            height: 1080px;
+            background-color: #FF5722;
+            overflow: hidden;
+            transform: scale(min(calc(100vw / 1920), calc(100vh / 1080)));
+            transform-origin: center center;
+            border: 2px solid #444;
+        }
+
+        /* Diagnostic Status Box */
+        #status-box {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 15px 20px;
+            font-size: 24px;
+            border-radius: 8px;
+            z-index: 100;
+            pointer-events: none;
+            border: 2px solid #ff0000;
+            /* Starts red (disconnected) */
+        }
+
+        /* The Ripple Base Class */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            border: 3px solid rgba(255, 255, 255, 0.9);
+            transform: translate(-50%, -50%);
+            animation: ripple-animation 1.5s ease-out forwards;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        @keyframes ripple-animation {
+            0% {
+                width: 0px;
+                height: 0px;
+                opacity: 1;
+                border-width: 6px;
+            }
+
+            100% {
+                width: 400px;
+                height: 400px;
+                opacity: 0;
+                border-width: 0px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="screen-container">
+        <div id="status-box">🔴 Connecting to Lidar...</div>
+    </div>
+
+    <script>
+        const container = document.getElementById('screen-container');
+        const statusBox = document.getElementById('status-box');
+
+        // Force the strict localhost URL to prevent file:// protocol blocking
+        const ws = new WebSocket(`ws://localhost:3000`);
+
+        // Visual confirmation that the browser is talking to Node.js
+        ws.onopen = () => {
+            statusBox.innerHTML = "🟢 Lidar Connected!";
+            statusBox.style.borderColor = "#00ff00";
+        };
+
+        ws.onclose = () => {
+            statusBox.innerHTML = "🔴 Connection Lost. Is server.js running?";
+            statusBox.style.borderColor = "#ff0000";
+        };
+
+        ws.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                if (data.pixelX !== undefined && data.pixelY !== undefined) {
+
+                    // Flash the status box with the live coordinates for debugging
+                    statusBox.innerHTML = `🟢 Hit: X ${data.pixelX} | Y ${data.pixelY}`;
+
+                    createRipple(data.pixelX, data.pixelY);
+                }
+            } catch (err) {
+                console.error("Error parsing WebSocket data:", err);
+            }
+        };
+
+        function createRipple(pixelX, pixelY) {
+            const ripple = document.createElement('div');
+            ripple.classList.add('ripple');
+
+            ripple.style.left = `${pixelX}px`;
+            ripple.style.top = `${pixelY}px`;
+
+            container.appendChild(ripple);
+
+            setTimeout(() => {
+                ripple.remove();
+            }, 1500);
+        }
+    </script>
+</body>
+
+</html> -->
+
+
+<!-- 2 Sensors -->
+ !DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Tunnel - Live</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #121212;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              height: 100vh;
+              overflow: hidden;
+              font-family: monospace;
+             
+        }
+
+        /* 
+         * Change width/height below to exactly match your LED processors 
+         * e.g., width: 1000px; height: 4000px; 
+         */
+        #screen-container {
+            position: relative;
+              width: 1920px;
+            /* UPDATE FOR LED WALL */
+              height: 1080px;
+            /* UPDATE FOR LED WALL */
+              background-color: #FF5722;
+              overflow: hidden;
+             
+                /* Automatically scales to fit preview screens; harmless on LED walls */
+                transform: scale(min(calc(100vw / 1920), calc(100vh / 1080)));
+              transform-origin: center center;
+              border: 2px solid #444;
+             
+        }
+
+        /* Diagnostic Status Box - Remove display:block to hide in production */
+        #status-box {
+            position: absolute;
+              top: 20px;
+              left: 20px;
+              background: rgba(0, 0, 0, 0.8);
+              color: #fff;
+              padding: 15px 20px;
+              font-size: 24px;
+              border-radius: 8px;
+              z-index: 100;
+              pointer-events: none;
+              border: 2px solid #ff0000;
+              display: block;
+        }
+
+        /* The Ripple Base Class */
+        .ripple {
+            position: absolute;
+              border-radius: 50%;
+              border: 3px solid rgba(255, 255, 255, 0.9);
+              transform: translate(-50%, -50%);
+              animation: ripple-animation 1.5s ease-out forwards;
+              pointer-events: none;
+              z-index: 50;
+             
+        }
+
+        @keyframes ripple-animation {
+            0% {
+                width: 0px;
+                  height: 0px;
+                  opacity: 1;
+                  border-width: 6px;
+                 
+            }
+
+            100% {
+                width: 400px;
+                  height: 400px;
+                  opacity: 0;
+                  border-width: 0px;
+                 
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="screen-container">
+        <div id="status-box">🔴 Connecting to Dual Lidars...</div>
+    </div>
+
+    <script>
+        const container = document.getElementById('screen-container'); 
+        const statusBox = document.getElementById('status-box'); 
+
+        const ws = new WebSocket(`ws://${window.location.host}`); 
+
+        ws.onopen = () => {
+            statusBox.innerHTML = "🟢 System Armed & Connected!"; 
+            statusBox.style.borderColor = "#00ff00"; 
+        };
+
+        ws.onclose = () => {
+            statusBox.innerHTML = "🔴 Connection Lost to Node.js Engine"; 
+            statusBox.style.borderColor = "#ff0000"; 
+        };
+
+        ws.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data); 
+                if (data.percentX !== undefined && data.percentY !== undefined) {
+                     
+
+                    statusBox.innerHTML = `🟢 Ripple: ${Math.round(data.percentX)}% | ${Math.round(data.percentY)}%`; 
+                    createRipple(data.percentX, data.percentY); 
+                }
+            } catch (err) {
+                console.error("Error parsing WebSocket data:", err); 
+            }
+        };
+
+        function createRipple(percentX, percentY) {
+            const ripple = document.createElement('div'); 
+            ripple.classList.add('ripple'); 
+
+            // We use CSS percentages here to ensure the spawn points scale flawlessly 
+            // no matter what pixel resolution the LED sending cards use.
+            ripple.style.left = `${percentX}%`;
+            ripple.style.top = `${percentY}%`;
+
+            container.appendChild(ripple); 
+
+            setTimeout(() => {
+                ripple.remove(); 
+            }, 1500); 
+        }
+    </script>
+</body>
+
+</html>
