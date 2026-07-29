@@ -331,7 +331,6 @@
                 osc.stop(audioCtx.currentTime + 0.15);
             } catch (e) { }
         }
-
         // Initialize directly via Html5Qrcode to bypass the auto-generated UI
         const html5QrCode = new Html5Qrcode("reader");
 
@@ -339,11 +338,17 @@
         html5QrCode.start(
             { facingMode: "environment" },
             {
-                fps: 15,
-                // Asking for high resolution to ensure crisp reads across the whole screen
+                fps: 20, // Increased frame rate for faster detection
+
+                // THIS IS THE MAGIC LINE: 
+                // It uses the phone's native hardware scanner for instant, highly flexible scanning anywhere on screen
+                useBarCodeDetectorIfSupported: true,
+
                 videoConstraints: {
                     width: { ideal: 1920 },
-                    height: { ideal: 1080 }
+                    height: { ideal: 1080 },
+                    // Force the camera lens to constantly auto-focus on moving objects
+                    advanced: [{ focusMode: "continuous" }]
                 }
             },
             (decodedText, decodedResult) => {
@@ -362,13 +367,21 @@
             console.log("Preparing to send to Jotform:", guestName);
             const scanTime = new Date().toLocaleString();
 
-            const formData = new FormData();
-            formData.append('submission[5]', guestName); // Guest Name Field
-            formData.append('submission[3]', scanTime);  // Timestamp Field
+            // 1. Package the data using URLSearchParams instead of FormData
+            const params = new URLSearchParams();
 
+            // The API strictly requires the submission[ID] format, not the unique name
+            params.append('submission[5]', guestName);
+            params.append('submission[3]', scanTime);
+
+            // 2. Send to Jotform API with explicit headers
             fetch('https://api.jotform.com/form/262092294490056/submissions?apiKey=4806f3b863cdd104af92ccc3f99860c4', {
                 method: 'POST',
-                body: formData
+                headers: {
+                    // This header tells Jotform to expect traditional form data
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: params.toString()
             })
                 .then(response => response.json())
                 .then(data => {
@@ -376,9 +389,13 @@
                         console.log('✅ Successfully saved to Jotform:', data);
                     } else {
                         console.error('❌ Jotform API rejected the submission:', data.message);
+                        // Pop up an alert so you can immediately see WHY it failed
+                        alert("Jotform Error: " + data.message);
                     }
                 })
-                .catch(error => console.error('Network Error saving to Jotform:', error));
+                .catch(error => {
+                    console.error('Network Error saving to Jotform:', error);
+                });
         }
     </script>
 </body>
